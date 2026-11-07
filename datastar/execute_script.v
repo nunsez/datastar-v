@@ -38,12 +38,12 @@ fn build_script_tag(script string, options ExecuteScriptOptions) string {
 	return tag.str()
 }
 
-pub fn (mut sse ServerSentEventGenerator) execute_script(script string, options ExecuteScriptOptions) ! {
+pub fn build_execute_script(script string, options ExecuteScriptOptions) !string {
 	if script == '' {
 		return error('execute_script: script is required')
 	}
 	tag := build_script_tag(script, options)
-	return sse.patch_elements(tag,
+	return build_patch_elements(tag,
 		selector:       'body'
 		mode:           .append
 		event_id:       options.event_id
@@ -51,20 +51,38 @@ pub fn (mut sse ServerSentEventGenerator) execute_script(script string, options 
 	)
 }
 
+pub fn (mut sse ServerSentEventGenerator) execute_script(script string, options ExecuteScriptOptions) ! {
+	sse.write_event(build_execute_script(script, options)!)!
+}
+
+pub fn build_console_log(msg string, options ExecuteScriptOptions) !string {
+	return build_execute_script('console.log(${json2.encode(msg)})', options)
+}
+
 pub fn (mut sse ServerSentEventGenerator) console_log(msg string, options ExecuteScriptOptions) ! {
-	return sse.execute_script('console.log(${json2.encode(msg)})', options)
+	sse.write_event(build_console_log(msg, options)!)!
 }
 
 pub fn (mut sse ServerSentEventGenerator) console_error(msg string, options ExecuteScriptOptions) ! {
 	return sse.execute_script('console.error(${json2.encode(msg)})', options)
 }
 
+pub fn build_redirect(url string, options ExecuteScriptOptions) !string {
+	return build_execute_script('setTimeout(() => window.location.href = ${json2.encode(url)})',
+		options)
+}
+
 pub fn (mut sse ServerSentEventGenerator) redirect(url string, options ExecuteScriptOptions) ! {
-	return sse.execute_script('setTimeout(() => window.location.href = ${json2.encode(url)})', options)
+	sse.write_event(build_redirect(url, options)!)!
+}
+
+pub fn build_replace_url(url string, options ExecuteScriptOptions) !string {
+	return build_execute_script('window.history.replaceState({}, "", ${json2.encode(url)})',
+		options)
 }
 
 pub fn (mut sse ServerSentEventGenerator) replace_url(url string, options ExecuteScriptOptions) ! {
-	return sse.execute_script('window.history.replaceState({}, "", ${json2.encode(url)})', options)
+	sse.write_event(build_replace_url(url, options)!)!
 }
 
 struct PrefetchRule {

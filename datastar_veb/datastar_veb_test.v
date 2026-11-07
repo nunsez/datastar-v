@@ -77,3 +77,38 @@ fn test_patch_signals_value() ! {
 	})!
 	assert ctx.res.body == 'event: datastar-patch-signals\ndata: signals {"count":1}\n\n'
 }
+
+fn test_execute_script() ! {
+	mut ctx := veb.Context{}
+	execute_script(mut ctx, 'alert(1)')!
+	assert ctx.res.body == 'event: datastar-patch-elements\ndata: selector body\ndata: mode append\ndata: elements <script data-effect="el.remove()">alert(1)</script>\n\n'
+	assert ctx.res.header.get(.content_type)? == 'text/event-stream'
+}
+
+fn test_execute_script_validation() ! {
+	mut ctx := veb.Context{}
+	execute_script(mut ctx, '') or {
+		assert err.msg().contains('script is required')
+		assert ctx.res.body == ''
+		return
+	}
+	assert false
+}
+
+fn test_console_log() ! {
+	mut ctx := veb.Context{}
+	console_log(mut ctx, 'hello')!
+	assert ctx.res.body.contains('console.log("hello")')
+}
+
+fn test_redirect() ! {
+	mut ctx := veb.Context{}
+	redirect(mut ctx, '/next')!
+	assert ctx.res.body.contains('setTimeout(() => window.location.href = "/next")')
+}
+
+fn test_replace_url() ! {
+	mut ctx := veb.Context{}
+	replace_url(mut ctx, '/next')!
+	assert ctx.res.body.contains('window.history.replaceState({}, "", "/next")')
+}

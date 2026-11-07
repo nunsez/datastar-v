@@ -19,6 +19,22 @@ pub fn patch_signals_value[T](mut ctx veb.Context, signals T, options datastar.P
 	return send_sse_body(mut ctx, datastar.build_patch_signals_value(signals, options)!)
 }
 
+pub fn execute_script(mut ctx veb.Context, script string, options datastar.ExecuteScriptOptions) !veb.Result {
+	return send_sse_body(mut ctx, datastar.build_execute_script(script, options)!)
+}
+
+pub fn console_log(mut ctx veb.Context, msg string, options datastar.ExecuteScriptOptions) !veb.Result {
+	return send_sse_body(mut ctx, datastar.build_console_log(msg, options)!)
+}
+
+pub fn redirect(mut ctx veb.Context, url string, options datastar.ExecuteScriptOptions) !veb.Result {
+	return send_sse_body(mut ctx, datastar.build_redirect(url, options)!)
+}
+
+pub fn replace_url(mut ctx veb.Context, url string, options datastar.ExecuteScriptOptions) !veb.Result {
+	return send_sse_body(mut ctx, datastar.build_replace_url(url, options)!)
+}
+
 fn send_sse_body(mut ctx veb.Context, body string) !veb.Result {
 	for key, value in datastar.sse_headers {
 		ctx.set_custom_header(key, value)!
