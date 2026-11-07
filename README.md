@@ -23,7 +23,7 @@ same name, hence the distinct adapter name.
 ## Core API
 
 ```v
-import datastar
+import datastar.datastar
 
 mut sse := datastar.new_sse(mut writer)!
 
